@@ -1,0 +1,10 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@bitnet-infotech/react-native-audio-ffmpeg": ["../src/index"]
+    }
+  },
+  "include": ["src", "index.js"]
+}

@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Read audio files from shared storage (API ≤ 32) -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+
+  <!-- Write to shared storage (API ≤ 28 only; scoped storage on 29+) -->
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="28" />
+
+  <!-- Scoped storage: read audio on Android 13+ (API 33+) -->
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+</manifest>

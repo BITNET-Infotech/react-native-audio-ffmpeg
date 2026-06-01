@@ -1,0 +1,14 @@
+.npmrc
+node_modules
+.gradle
+.DS_Store
+.idea
+build
+.kotlin
+.cxx
+.github
+.kiro
+Pods
+local.properties
+.xcode.env.local
+.npmrc.example

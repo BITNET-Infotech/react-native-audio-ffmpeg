@@ -1,0 +1,52 @@
+buildscript {
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+}
+
+// React Native New Architecture: applies codegen plugin automatically
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.facebook.react'   // ← enables RN Codegen + autolink
+
+android {
+  // Android 16 = API 36 (June 2025).
+  // Google Play requires targetSdkVersion 36 by August 2026.
+  compileSdkVersion safeExtGet('compileSdkVersion', 36)
+  namespace "com.audioffmpeg"
+
+  defaultConfig {
+    minSdkVersion safeExtGet('minSdkVersion', 24)
+    targetSdkVersion safeExtGet('targetSdkVersion', 36)
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+}
+
+repositories {
+  mavenCentral()
+  google()
+  maven { url "https://jitpack.io" }
+}
+
+dependencies {
+  // React Native — provided by the host app at runtime, not bundled
+  implementation "com.facebook.react:react-android"
+
+  // ffmpeg-kit is declared compileOnly — the HOST APP must add its preferred
+  // ffmpeg-kit variant to its own build.gradle.
+  compileOnly 'io.github.maitrungduc1410:ffmpeg-kit-min:6.0.1'
+
+  // TAndroidLame — LAME MP3 encoder JNI wrapper (for MP3 output support)
+  // Exclude old support library to avoid duplicate class conflict with AndroidX
+  implementation('com.github.naman14:TAndroidLame:1.1') {
+    exclude group: 'com.android.support'
+  }
+}

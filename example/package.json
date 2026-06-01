@@ -1,0 +1,37 @@
+{
+  "name": "react-native-audio-ffmpeg-example",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios -- --device \"iPhone 17 Pro\"",
+    "start": "react-native start",
+    "start:clean": "react-native start --reset-cache",
+    "clean:android": "cd android && ./gradlew clean && cd ..",
+    "clean:ios": "cd ios && xcodebuild clean && cd .."
+  },
+  "dependencies": {
+    "@react-native-documents/picker": "^9.0.0",
+    "@react-navigation/bottom-tabs": "^7.16.2",
+    "@react-navigation/native": "^7.2.5",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "@bitnet-infotech/react-native-audio-ffmpeg": "file:../",
+    "react-native-fs": "^2.20.0",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@babel/preset-env": "^7.25.0",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "^15.0.0",
+    "@react-native-community/cli-platform-ios": "^15.0.0",
+    "@react-native/babel-preset": "0.85.3",
+    "@react-native/eslint-config": "0.85.3",
+    "@react-native/metro-config": "0.85.3",
+    "@react-native/typescript-config": "0.85.3",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.0.4"
+  }
+}
