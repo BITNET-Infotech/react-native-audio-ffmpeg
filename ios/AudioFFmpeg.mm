@@ -52,9 +52,13 @@ RCT_EXPORT_MODULE(NativeAudioFFmpeg)
             });
         };
 
-        _impl.encodeMp3 = ^BOOL(NSString *wavPath, NSString *mp3Path) {
+        _impl.encodeMp3 = ^BOOL(NSString *wavPath, NSString *mp3Path, NSInteger bitrateKbps, NSInteger quality) {
             NSError *error = nil;
-            return [AudioFFmpegLame encodeWavFile:wavPath toMp3File:mp3Path error:&error];
+            return [AudioFFmpegLame encodeWavFile:wavPath
+                                        toMp3File:mp3Path
+                                      bitrateKbps:(int)bitrateKbps
+                                          quality:(int)quality
+                                            error:&error];
         };
     }
     return self;

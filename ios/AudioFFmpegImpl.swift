@@ -28,7 +28,7 @@ import ffmpegkit
      * cannot easily import the C lame library without a bridging header).
      * Returns true on success.
      */
-    @objc public var encodeMp3: ((_ wavPath: String, _ mp3Path: String) -> Bool)?
+    @objc public var encodeMp3: ((_ wavPath: String, _ mp3Path: String, _ bitrateKbps: Int, _ quality: Int) -> Bool)?
 
 
     // ─── execute() ────────────────────────────────────────────────────────────
@@ -185,6 +185,8 @@ import ffmpegkit
     private func executeWithMp3Encoding(_ command: String, mp3Out: String) -> [String: Any] {
         let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.path
         let wavTemp = "\(cacheDir)/tmp_mp3_\(Date().timeIntervalSince1970).wav"
+        let mp3BitrateKbps = extractAudioBitrateKbps(command) ?? 128
+        let mp3Quality = min(max(extractAudioQuality(command) ?? 3, 0), 9)
 
         // Replace mp3 output with wav output
         var wavCommand = command
@@ -222,7 +224,7 @@ import ffmpegkit
         let lameStart = Date().timeIntervalSince1970
         var encodeSuccess = false
         if let encodeMp3 = self.encodeMp3 {
-            encodeSuccess = encodeMp3(wavTemp, mp3Out)
+            encodeSuccess = encodeMp3(wavTemp, mp3Out, mp3BitrateKbps, mp3Quality)
         }
         let totalDuration = ffmpegDuration + Int((Date().timeIntervalSince1970 - lameStart) * 1000)
 
@@ -234,5 +236,31 @@ import ffmpegkit
         } else {
             return ["returnCode": -1, "output": "LAME MP3 encoding failed", "duration": totalDuration]
         }
+    }
+
+    private func extractAudioBitrateKbps(_ command: String) -> Int? {
+        guard let regex = try? NSRegularExpression(pattern: "-b:a\\s+(\\d+)k\\b", options: [.caseInsensitive]) else {
+            return nil
+        }
+        let nsString = command as NSString
+        guard let match = regex.firstMatch(in: command, range: NSRange(location: 0, length: nsString.length)) else {
+            return nil
+        }
+        let bitrateRange = match.range(at: 1)
+        guard bitrateRange.location != NSNotFound else { return nil }
+        return Int(nsString.substring(with: bitrateRange))
+    }
+
+    private func extractAudioQuality(_ command: String) -> Int? {
+        guard let regex = try? NSRegularExpression(pattern: "-q:a\\s+([0-9]+)\\b", options: [.caseInsensitive]) else {
+            return nil
+        }
+        let nsString = command as NSString
+        guard let match = regex.firstMatch(in: command, range: NSRange(location: 0, length: nsString.length)) else {
+            return nil
+        }
+        let qualityRange = match.range(at: 1)
+        guard qualityRange.location != NSNotFound else { return nil }
+        return Int(nsString.substring(with: qualityRange))
     }
 }

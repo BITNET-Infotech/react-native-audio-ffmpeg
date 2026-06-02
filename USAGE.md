@@ -112,6 +112,7 @@ import type {
   AudioProgressEvent,
   AudioLogEvent,
   AudioCompleteEvent,
+  AudioConvertOptions,
 } from '@bitnet-infotech/react-native-audio-ffmpeg';
 
 // Returned by all blocking methods (run, merge, convert, trim, ...)
@@ -141,6 +142,15 @@ interface AudioCompleteEvent {
   sessionId:  string;
   returnCode: number;
   output:     string;
+}
+
+// Optional typed options for convert()
+interface AudioConvertOptions {
+  sampleRate?: number;         // Hz, e.g. 44100, 48000
+  bitrate?: number;            // kbps, e.g. 128, 192, 320
+  channels?: 1 | 2;            // 1=mono, 2=stereo
+  quality?: number;            // MP3 LAME: 0(best)-9(fastest), others -> -q:a
+  ffmpegArgs?: string;         // raw extra FFmpeg args
 }
 ```
 
@@ -344,12 +354,19 @@ const mergeRecordings = async (recordings: string[]) => {
 AudioFFmpeg.convert(
   input:   string,
   output:  string,
-  options?: string  // extra FFmpeg flags
+  options?: string | AudioConvertOptions
 ): Promise<AudioSession>
 ```
 
 Converts any audio file to any other audio format. Output format = file extension.  
-Use `options` to pass extra FFmpeg flags for full codec control.
+Use `options` to pass either raw FFmpeg flags (`string`) or typed options (`AudioConvertOptions`) for easier control.
+
+**MP3 defaults (when you do not pass custom values):**
+
+- `bitrate`: `128k`
+- `quality`: `3`
+- `sampleRate`: inherited from input (or from `-ar` / `sampleRate` if provided)
+- `channels`: inherited from input (or from `-ac` / `channels` if provided)
 
 ```typescript
 import AudioFFmpeg from '@bitnet-infotech/react-native-audio-ffmpeg';
@@ -409,6 +426,29 @@ await AudioFFmpeg.convert(
   '/path/input.mp3',
   '/path/output.mp3',
   '-ac 1'
+);
+
+// ── With typed options (recommended) ───────────────────────────────────────
+
+await AudioFFmpeg.convert(
+  '/path/input.wav',
+  '/path/output.mp3',
+  {
+    sampleRate: 48000,
+    bitrate: 192,
+    channels: 2,
+    quality: 2,
+  }
+);
+
+// Extra advanced FFmpeg args can still be passed in the object
+await AudioFFmpeg.convert(
+  '/path/input.wav',
+  '/path/output.opus',
+  {
+    bitrate: 128,
+    ffmpegArgs: '-c:a libopus -vbr on -compression_level 10',
+  }
 );
 
 // ── React Native utility function ─────────────────────────────────────────

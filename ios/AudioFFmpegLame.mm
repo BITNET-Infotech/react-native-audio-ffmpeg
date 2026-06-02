@@ -3,7 +3,11 @@
 
 @implementation AudioFFmpegLame
 
-+ (BOOL)encodeWavFile:(NSString *)wavPath toMp3File:(NSString *)mp3Path error:(NSError **)error {
++ (BOOL)encodeWavFile:(NSString *)wavPath
+            toMp3File:(NSString *)mp3Path
+          bitrateKbps:(int)bitrateKbps
+              quality:(int)quality
+                error:(NSError **)error {
     FILE *wavFile = fopen([wavPath UTF8String], "rb");
     if (!wavFile) {
         if (error) *error = [NSError errorWithDomain:@"AudioFFmpegLame" code:-1 userInfo:@{NSLocalizedDescriptionKey: @"Failed to open WAV file"}];
@@ -40,8 +44,8 @@
     lame_set_in_samplerate(lame, sampleRate);
     lame_set_num_channels(lame, numChannels);
     lame_set_out_samplerate(lame, sampleRate);
-    lame_set_brate(lame, 128); // 128 kbps by default
-    lame_set_quality(lame, 3);
+    lame_set_brate(lame, bitrateKbps);
+    lame_set_quality(lame, quality);
     lame_init_params(lame);
 
     const int CHUNK = 8192;

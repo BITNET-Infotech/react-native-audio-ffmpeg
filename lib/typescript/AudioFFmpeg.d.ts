@@ -38,6 +38,22 @@ export interface AudioCompleteEvent {
     returnCode: number;
     output: string;
 }
+export interface AudioConvertOptions {
+    /** Resample output audio (Hz), e.g. 44100, 48000 */
+    sampleRate?: number;
+    /** Output bitrate in kbps, e.g. 96, 128, 192, 320 */
+    bitrate?: number;
+    /** Output channel count: 1 (mono), 2 (stereo) */
+    channels?: 1 | 2;
+    /**
+     * Codec quality hint.
+     * - For MP3 this maps to LAME quality (0 best, 9 fastest).
+     * - For other codecs this maps to FFmpeg `-q:a`.
+     */
+    quality?: number;
+    /** Extra raw FFmpeg args (advanced users), appended last. */
+    ffmpegArgs?: string;
+}
 export declare class AudioFFmpeg {
     /**
      * Run any FFmpeg command and wait for completion.
@@ -99,8 +115,16 @@ export declare class AudioFFmpeg {
      * await AudioFFmpeg.convert('/in.wav', '/out.mp3',  '-q:a 0');          // VBR best quality
      * await AudioFFmpeg.convert('/in.wav', '/out.opus', '-b:a 128k -vbr on');
      * await AudioFFmpeg.convert('/in.mp3', '/out.flac', '-c:a flac -compression_level 8');
+     *
+     * // Typed options:
+     * await AudioFFmpeg.convert('/in.wav', '/out.mp3', {
+     *   sampleRate: 48000,
+     *   bitrate: 192,
+     *   channels: 2,
+     *   quality: 2,
+     * });
      */
-    static convert(input: string, output: string, options?: string): Promise<AudioSession>;
+    static convert(input: string, output: string, options?: string | AudioConvertOptions): Promise<AudioSession>;
     /** Subscribe to log lines from any running async session */
     static onLog(cb: (e: AudioLogEvent) => void): EmitterSubscription;
     /** Subscribe to progress events from any running async session */

@@ -82,6 +82,23 @@ export interface AudioCompleteEvent {
   output: string;
 }
 
+export interface AudioConvertOptions {
+  /** Resample output audio (Hz), e.g. 44100, 48000 */
+  sampleRate?: number;
+  /** Output bitrate in kbps, e.g. 96, 128, 192, 320 */
+  bitrate?: number;
+  /** Output channel count: 1 (mono), 2 (stereo) */
+  channels?: 1 | 2;
+  /**
+   * Codec quality hint.
+   * - For MP3 this maps to LAME quality (0 best, 9 fastest).
+   * - For other codecs this maps to FFmpeg `-q:a`.
+   */
+  quality?: number;
+  /** Extra raw FFmpeg args (advanced users), appended last. */
+  ffmpegArgs?: string;
+}
+
 // ─── Codec map ───────────────────────────────────────────────────────────
 // Explicit encoder flags per output extension.
 //
@@ -254,15 +271,26 @@ export class AudioFFmpeg {
    * await AudioFFmpeg.convert('/in.wav', '/out.mp3',  '-q:a 0');          // VBR best quality
    * await AudioFFmpeg.convert('/in.wav', '/out.opus', '-b:a 128k -vbr on');
    * await AudioFFmpeg.convert('/in.mp3', '/out.flac', '-c:a flac -compression_level 8');
+   *
+   * // Typed options:
+   * await AudioFFmpeg.convert('/in.wav', '/out.mp3', {
+   *   sampleRate: 48000,
+   *   bitrate: 192,
+   *   channels: 2,
+   *   quality: 2,
+   * });
    */
   static convert(
     input: string,
     output: string,
-    options = ''
+    options: string | AudioConvertOptions = ''
   ): Promise<AudioSession> {
-    const codec = options ? '' : codecFlagsFor(output);
+    const optionFlags = typeof options === 'string'
+      ? options
+      : buildConvertFlags(options);
+    const codec = optionFlags ? '' : codecFlagsFor(output);
     return Native().execute(
-      `-i "${input}" -vn ${codec} ${options} -y "${output}"`
+      `-i "${input}" -vn ${codec} ${optionFlags} -y "${output}"`
     );
   }
 
@@ -292,6 +320,16 @@ export class AudioFFmpeg {
   }
 
 
+}
+
+function buildConvertFlags(options: AudioConvertOptions = {}): string {
+  const flags: string[] = [];
+  if (options.sampleRate) flags.push(`-ar ${options.sampleRate}`);
+  if (options.bitrate) flags.push(`-b:a ${options.bitrate}k`);
+  if (options.channels) flags.push(`-ac ${options.channels}`);
+  if (typeof options.quality === 'number') flags.push(`-q:a ${options.quality}`);
+  if (options.ffmpegArgs?.trim()) flags.push(options.ffmpegArgs.trim());
+  return flags.join(' ');
 }
 
 export default AudioFFmpeg;

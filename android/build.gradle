@@ -46,7 +46,7 @@ dependencies {
 
   // TAndroidLame — LAME MP3 encoder JNI wrapper (for MP3 output support)
   // Exclude old support library to avoid duplicate class conflict with AndroidX
-  implementation('com.github.naman14:TAndroidLame:1.1') {
+  implementation('com.github.kaushik-naik:TAndroidLame:277c2ab4b0') {
     exclude group: 'com.android.support'
   }
 }

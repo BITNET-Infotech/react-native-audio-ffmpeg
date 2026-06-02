@@ -174,6 +174,8 @@ class AudioFFmpegModule(reactContext: ReactApplicationContext) :
     private fun executeWithMp3Encoding(command: String, mp3Out: String): WritableMap {
         val cacheDir = reactApplicationContext.cacheDir.absolutePath
         val wavTemp  = "$cacheDir/tmp_mp3_${System.currentTimeMillis()}.wav"
+        val mp3Bitrate = extractAudioBitrateKbps(command) ?: 128
+        val mp3Quality = (extractAudioQuality(command) ?: 3).coerceIn(0, 9)
 
         try {
             // Step 1 — FFmpeg decode → PCM WAV (s16le, keep original sample rate & channels)
@@ -204,7 +206,7 @@ class AudioFFmpegModule(reactContext: ReactApplicationContext) :
 
             // Step 2 — Read WAV header, encode PCM → MP3 with LAME
             val lameStart = System.currentTimeMillis()
-            encodePcmWavToMp3(wavTemp, mp3Out)
+            encodePcmWavToMp3(wavTemp, mp3Out, mp3Bitrate, mp3Quality)
             val totalDuration = ffmpegDuration + (System.currentTimeMillis() - lameStart)
 
             return buildResult(returnCode = 0, output = "MP3 encoding complete", duration = totalDuration)
@@ -217,7 +219,12 @@ class AudioFFmpegModule(reactContext: ReactApplicationContext) :
     /**
      * Reads a PCM WAV file and encodes it to MP3 using TAndroidLame.
      */
-    private fun encodePcmWavToMp3(wavPath: String, mp3Path: String) {
+    private fun encodePcmWavToMp3(
+        wavPath: String,
+        mp3Path: String,
+        outBitrateKbps: Int,
+        quality: Int
+    ) {
         FileInputStream(wavPath).use { fis ->
             FileOutputStream(mp3Path).use { fos ->
 
@@ -238,9 +245,9 @@ class AudioFFmpegModule(reactContext: ReactApplicationContext) :
                 val lame: AndroidLame = LameBuilder()
                     .setInSampleRate(sampleRate)
                     .setOutChannels(numChannels)
-                    .setOutBitrate(128)
+                    .setOutBitrate(outBitrateKbps)
                     .setOutSampleRate(sampleRate)
-                    .setQuality(3)
+                    .setQuality(quality)
                     .build()
 
                 val CHUNK   = 8192        // samples per channel per chunk
@@ -276,6 +283,16 @@ class AudioFFmpegModule(reactContext: ReactApplicationContext) :
             putString("output",  output)
             putDouble("duration", duration.toDouble())
         }
+
+    private fun extractAudioBitrateKbps(command: String): Int? {
+        val match = Regex("""-b:a\s+(\d+)k\b""", RegexOption.IGNORE_CASE).find(command) ?: return null
+        return match.groupValues[1].toIntOrNull()
+    }
+
+    private fun extractAudioQuality(command: String): Int? {
+        val match = Regex("""-q:a\s+([0-9]+)\b""", RegexOption.IGNORE_CASE).find(command) ?: return null
+        return match.groupValues[1].toIntOrNull()
+    }
 
     private fun emitEvent(name: String, params: WritableMap) {
         reactApplicationContext
