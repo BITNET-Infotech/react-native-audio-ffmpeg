@@ -40,9 +40,8 @@ dependencies {
   // React Native — provided by the host app at runtime, not bundled
   implementation "com.facebook.react:react-android"
 
-  // ffmpeg-kit is declared compileOnly — the HOST APP must add its preferred
-  // ffmpeg-kit variant to its own build.gradle.
-  compileOnly 'io.github.maitrungduc1410:ffmpeg-kit-min:6.0.1'
+  // ffmpeg-kit bundled so FFmpegKit classes are available at runtime (no host setup)
+  implementation 'io.github.maitrungduc1410:ffmpeg-kit-min:6.0.1'
 
   // TAndroidLame — LAME MP3 encoder JNI wrapper (for MP3 output support)
   // Exclude old support library to avoid duplicate class conflict with AndroidX

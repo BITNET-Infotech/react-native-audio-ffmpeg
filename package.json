@@ -1,6 +1,6 @@
 {
   "name": "@bitnet-infotech/react-native-audio-ffmpeg",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Universal audio processing for React Native — merge, convert, trim any audio format. New Architecture Turbo Module.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

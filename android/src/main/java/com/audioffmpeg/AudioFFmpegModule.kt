@@ -242,13 +242,18 @@ class AudioFFmpegModule(reactContext: ReactApplicationContext) :
                     throw IllegalStateException("Expected 16-bit PCM WAV, got ${bitsPerSample}-bit")
                 }
 
-                val lame: AndroidLame = LameBuilder()
+                val lameBuilder = LameBuilder()
                     .setInSampleRate(sampleRate)
                     .setOutChannels(numChannels)
                     .setOutBitrate(outBitrateKbps)
                     .setOutSampleRate(sampleRate)
                     .setQuality(quality)
-                    .build()
+
+                if (numChannels == 1) {
+                    lameBuilder.setMode(LameBuilder.Mode.MONO)
+                }
+
+                val lame = lameBuilder.build()
 
                 val CHUNK   = 8192        // samples per channel per chunk
                 val bytesPerSample = 2    // 16-bit = 2 bytes
@@ -265,7 +270,11 @@ class AudioFFmpegModule(reactContext: ReactApplicationContext) :
                         .asShortBuffer()
                         .get(shortBuf, 0, bytesRead / 2)
 
-                    val encoded = lame.encodeBufferInterLeaved(shortBuf, samples, mp3Buf)
+                    val encoded = if (numChannels == 1) {
+                        lame.encode(shortBuf, shortBuf, samples, mp3Buf)
+                    } else {
+                        lame.encodeBufferInterLeaved(shortBuf, samples, mp3Buf)
+                    }
                     if (encoded > 0) fos.write(mp3Buf, 0, encoded)
                 }
 

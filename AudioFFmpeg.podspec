@@ -45,13 +45,6 @@ Pod::Spec.new do |s|
   # MP3 Encoding Support (LAME 3.100 C Library)
   s.dependency "lame", "~> 1.2.2"
 
-  # React Native New Architecture dependencies (required for Turbo Module)
-  s.dependency "React-Core"
-  s.dependency "React-NativeModulesApple"
-  s.dependency "ReactCommon/turbomodule/core"
-  s.dependency "RCTRequired"
-  s.dependency "RCTTypeSafety"
-
   s.pod_target_xcconfig = {
     # Required for Swift to be callable from ObjC++ (generates the -Swift.h header)
     "DEFINES_MODULE"                 => "YES",
@@ -66,4 +59,7 @@ Pod::Spec.new do |s|
     # framework targets (which is how CocoaPods builds pods). AudioFFmpegImpl.swift
     # only imports FFmpegKit directly as a Swift module; it needs no ObjC bridging.
   }
+
+  # New Architecture only — wired by the host app's react_native_pods.rb
+  install_modules_dependencies(s)
 end
